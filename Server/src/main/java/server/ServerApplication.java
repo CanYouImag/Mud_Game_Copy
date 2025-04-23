@@ -75,6 +75,7 @@ public class ServerApplication implements CommandLineRunner {
         private PrintWriter out;
         private Player player; // 添加玩家对象
         private JTextArea textArea; // 提升 textArea 的作用域
+        private JFrame frame; // 添加 JFrame 对象
 
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
@@ -101,7 +102,7 @@ public class ServerApplication implements CommandLineRunner {
 
                 if (!isHeadless) {
                     // 创建窗口化命令行界面
-                    JFrame frame = new JFrame("窗口化命令行");
+                    frame = new JFrame("窗口化命令行");
                     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     frame.setSize(400, 300);
 
@@ -134,7 +135,7 @@ public class ServerApplication implements CommandLineRunner {
                         }
                     });
 
-                    frame.setVisible(true);
+                    frame.setVisible(true); // 确保窗口可见
                 } else {
                     // 如果是 headless 模式，输出提示信息
                     System.out.println("当前环境不支持图形界面，跳过窗口化命令行界面的创建。");
@@ -179,6 +180,9 @@ public class ServerApplication implements CommandLineRunner {
                 e.printStackTrace();
             } finally {
                 try {
+                    if (frame != null) {
+                        frame.dispose(); // 确保窗口关闭
+                    }
                     clientSocket.close();
                 } catch (IOException e) {
                     e.printStackTrace();

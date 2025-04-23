@@ -77,10 +77,7 @@ public class DatabaseManager {
             try (ResultSet rs = stmt.executeQuery(sql)) {
                 while (rs.next()) {
                     // 创建 Room 对象并设置属性
-                    Room room = new Room("000","空屋子","一个空空荡荡的屋子");
-                    room.setId(rs.getString("id"));
-                    room.setName(rs.getString("name"));
-                    room.setDescription(rs.getString("description"));
+                    Room room = new Room(rs.getString("id"), rs.getString("name"), rs.getString("description"));
                     rooms.add(room);
                 }
             }
