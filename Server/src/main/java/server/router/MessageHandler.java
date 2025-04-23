@@ -7,150 +7,85 @@ import server.Direction;
 import java.util.*;
 
 public class MessageHandler {
-    private static Player player;
-    private static Room currentRoom;
+    private Player player;
 
     public MessageHandler(Player player) {
         this.player = player;
-        this.currentRoom = player.getCurrentRoom();
     }
 
     public String handleMessage(String message) {
+        if (message == null || message.isEmpty()) {
+            return "无效的命令，请输入 help 查看可用命令。";
+        }
+
         String[] parts = message.split(" ");
-        String commandName = parts[0].toLowerCase();
-        String[] args = Arrays.copyOfRange(parts, 1, parts.length);
+        String command = parts[0].toLowerCase();
 
-        switch (commandName) {
+        switch (command) {
             case "look":
-                return lookCommand();
+                return handleLookCommand();
             case "move":
-                return moveCommand(args);
+                return handleMoveCommand(parts);
             case "get":
-                return getCommand(args);
+                return handleGetCommand(parts);
             case "drop":
-                return dropCommand(args);
-            case "say":
-                return sayCommand(args);
-            case "help":
-                return helpCommand();
+                return handleDropCommand(parts);
             case "quit":
-                return quitCommand();
+                return "quit";
+            case "help":
+                return "可用命令：\n" +
+                       "  look - 查看当前房间\n" +
+                       "  move [方向] - 移动到指定方向的房间（方向包括 n, s, e, w, ne, se, nw, sw, u, d）\n" +
+                       "  get [物品] - 获取物品\n" +
+                       "  drop [物品] - 丢弃物品\n" +
+                       "  quit - 退出游戏\n" +
+                       "  help - 查看帮助\n" +
+                       "  exit - 退出程序";
             default:
-                return "未知命令，请输入 'help' 查看可用命令。";
+                return "无效的命令，请输入 help 查看可用命令。";
         }
     }
 
-    private String lookCommand() {
-        StringBuilder description = new StringBuilder();
-        description.append("当前房间：").append(currentRoom.getDescription()).append("\n");
-
-        // 显示房间中的物品
-        if (currentRoom.getItems().isEmpty()) {
-            description.append("房间里没有任何物品。\n");
-        } else {
-            description.append("物品：");
-            for (Items item : currentRoom.getItems()) {
-                description.append(item.getName()).append(", ");
-            }
-            description.deleteCharAt(description.length() - 2); // 删除最后一个逗号和空格
-            description.append("\n");
+    private String handleLookCommand() {
+        Room currentRoom = player.getCurrentRoom();
+        if (currentRoom == null) {
+            return "你似乎不在任何房间中。";
         }
-
-        // 显示房间的出口
-        Map<Direction, Room> exits = currentRoom.getExits();
-        if (exits.isEmpty()) {
-            description.append("没有出口。\n");
-        } else {
-            description.append("出口：");
-            for (Direction exit : exits.keySet()) {
-                description.append(exit).append(", ");
-            }
-            description.deleteCharAt(description.length() - 2); // 删除最后一个逗号和空格
-            description.append("\n");
-        }
-
-        return description.toString();
+        return currentRoom.getDescription();
     }
 
-    private String moveCommand(String[] args) {
-        if (args.length == 0) {
-            return "移动命令缺少方向参数，请输入 'move [方向]'。";
+    private String handleMoveCommand(String[] parts) {
+        if (parts.length < 2) {
+            return "请指定移动方向。";
         }
-
-        String directionStr = args[0].toUpperCase();
-        Direction direction;
+        String direction = parts[1].toLowerCase();
+        Room currentRoom = player.getCurrentRoom();
+        if (currentRoom == null) {
+            return "你似乎不在任何房间中。";
+        }
         try {
-            direction = Direction.valueOf(directionStr);
+            Optional<Room> nextRoomOptional = currentRoom.getExit(Direction.valueOf(direction.toUpperCase()));
+            if (nextRoomOptional.isPresent()) {
+                Room nextRoom = nextRoomOptional.get();
+                currentRoom.removePlayer(player);
+                player.setCurrentRoom(nextRoom);
+                nextRoom.addPlayer(player);
+                return "你移动到了 " + nextRoom.getName() + "。\n" + nextRoom.getDescription();
+            } else {
+                return "无法向该方向移动。";
+            }
         } catch (IllegalArgumentException e) {
-            return "无效的方向，请输入有效的方向。";
+            return "无效的方向，请输入 help 查看可用命令。";
         }
-
-        Room nextRoom = currentRoom.getExit(direction);
-        if (nextRoom == null) {
-            return "无法向 " + direction + " 移动，没有该方向的出口。";
-        }
-
-        currentRoom.removePlayer(player);
-        currentRoom = nextRoom;
-        currentRoom.addPlayer(player);
-        player.setCurrentRoom(currentRoom);
-        return "你移动到了新的房间：" + currentRoom.getDescription();
     }
 
-    private static String getCommand(String[] args) {
-        if (args.length == 0) {
-            return "获取命令缺少物品参数，请输入 'get [物品]'。";
-        }
-
-        String itemName = args[0];
-        List<Items> items = currentRoom.getItems();
-
-        for (Items item : items) {
-            if (item.getName().equalsIgnoreCase(itemName)) {
-                currentRoom.removeItem(item);
-                player.addItem(item);
-                return "你获取了物品：" + item.getName();
-            }
-        }
-
-        return "物品 " + itemName + " 不存在于此房间。";
+    private String handleGetCommand(String[] parts) {
+        // 实现获取物品的逻辑
+        return "暂未实现获取物品功能。";
     }
 
-    private static String dropCommand(String[] args) {
-        if (args.length == 0) {
-            return "丢弃命令缺少物品参数，请输入 'drop [物品]'。";
-        }
-
-        String itemName = args[0];
-        List<Items> inventory = player.getInventory();
-
-        for (Items item : inventory) {
-            if (item.getName().equalsIgnoreCase(itemName)) {
-                player.removeItem(item);
-                currentRoom.addItem(item);
-                return "你丢弃了物品：" + item.getName();
-            }
-        }
-
-        return "你没有持有物品 " + itemName + "。";
-    }
-
-    private static String sayCommand(String[] args) {
-        if (args.length == 0) {
-            return "聊天命令缺少消息内容，请输入 'say [消息]'。";
-        }
-
-        String message = String.join(" ", args);
-        currentRoom.broadcast(player.getName() + " says: " + message);
-        return "";
-    }
-
-    private static String helpCommand() {
-        return "可用命令：look, move [方向], get [物品], drop [物品], say [消息], help, quit";
-    }
-
-    private static String quitCommand() {
-        currentRoom.removePlayer(player);
-        return "quit";
+    private String handleDropCommand(String[] parts) {
+        // 实现丢弃物品的逻辑
+        return "暂未实现丢弃物品功能。";
     }
 }

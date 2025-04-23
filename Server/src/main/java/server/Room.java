@@ -1,9 +1,6 @@
 package server;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class Room {
@@ -49,8 +46,8 @@ public class Room {
         exits.put(direction, room);
     }
 
-    public Room getExit(Direction direction) {
-        return exits.get(direction);
+    public Optional<Room> getExit(Direction direction) {
+        return Optional.ofNullable(exits.get(direction));
     }
 
     public void addPlayer(Player player) {
@@ -77,6 +74,10 @@ public class Room {
 
     public String getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getDescription() {

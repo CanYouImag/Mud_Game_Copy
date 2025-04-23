@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class Player {
 	private final ArrayList<Items> inventory;
@@ -140,8 +141,9 @@ public class Player {
 	}
 
 	private void move(Direction direction) {
-		Room nextRoom = currentRoom.getExit(direction);
-		if (nextRoom != null) {
+		Optional<Room> nextRoomOptional = currentRoom.getExit(direction);
+		if (nextRoomOptional.isPresent()) {
+			Room nextRoom = nextRoomOptional.get();
 			currentRoom.removePlayer(this);
 			currentRoom = nextRoom;
 			currentRoom.addPlayer(this);
