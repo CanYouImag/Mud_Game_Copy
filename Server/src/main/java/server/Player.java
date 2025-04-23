@@ -198,4 +198,8 @@ public class Player {
     public void setOut(PrintWriter out) {
         this.out = out;
     }
+
+    public void setName(String username) {
+        this.name = username;
+    }
 }
