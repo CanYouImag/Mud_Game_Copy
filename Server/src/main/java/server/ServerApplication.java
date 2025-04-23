@@ -76,6 +76,7 @@ public class ServerApplication implements CommandLineRunner {
         private Player player; // 添加玩家对象
         private JTextArea textArea; // 提升 textArea 的作用域
         private JFrame frame; // 添加 JFrame 对象
+        private boolean isAuthenticated = false; // 新增标志位，用于标识用户是否已验证
 
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
@@ -139,40 +140,35 @@ public class ServerApplication implements CommandLineRunner {
                 } else {
                     // 如果是 headless 模式，输出提示信息
                     System.out.println("当前环境不支持图形界面，跳过窗口化命令行界面的创建。");
-                }
+                    // 在控制台中提示用户输入用户名和密码
+                    out.println("请输入用户名：");
+                    String username = in.readLine();
+                    out.println("请输入密码：");
+                    String password = in.readLine();
 
-                // 验证用户名和密码
-                if (!isHeadless && textArea != null) {
-                    textArea.append("请输入用户名："); // 使用 textArea 显示提示信息
-                }
-                String username = in.readLine();
-                if (!isHeadless && textArea != null) {
-                    textArea.append("\n请输入密码："); // 使用 textArea 显示提示信息
-                }
-                String password = in.readLine();
+                    // 优化用户验证逻辑
+                    while (!validateUser(username, password)) {
+                        out.println("用户名或密码错误！");
+                        out.println("请输入用户名：");
+                        username = in.readLine();
+                        out.println("请输入密码：");
+                        password = in.readLine();
+                    }
+                    out.println("登录成功！");
+                    isAuthenticated = true; // 设置验证标志位为 true
 
-                if (validateUser(username, password)) {
-                    if (!isHeadless && textArea != null) {
-                        textArea.append("\n登录成功！"); // 使用 textArea 显示提示信息
-                        textArea.append("\n请输入命令（输入 'exit' 退出）："); // 使用 textArea 显示提示信息
-                    }
-                } else {
-                    if (!isHeadless && textArea != null) {
-                        textArea.append("\n用户名或密码错误！"); // 使用 textArea 显示提示信息
-                    }
-                }
+                    // 登录成功后，提示用户输入命令
+                    out.println("请输入命令（输入 'exit' 退出）：");
 
-                // 主循环：处理客户端输入
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    if ("exit".equalsIgnoreCase(inputLine)) {
-                        break; // 退出循环
-                    }
-                    String response = processRequest(inputLine);
-                    if (response != null && !response.isEmpty()) {
-                        out.println(response); // 发送响应到客户端
-                        if (!isHeadless && textArea != null) {
-                            textArea.append(response + "\n"); // 在 textArea 中显示响应
+                    // 主循环：处理客户端输入
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        if ("exit".equalsIgnoreCase(inputLine)) {
+                            break; // 退出循环
+                        }
+                        String response = processRequest(inputLine);
+                        if (response != null && !response.isEmpty()) {
+                            out.println(response); // 发送响应到客户端
                         }
                     }
                 }
@@ -193,25 +189,29 @@ public class ServerApplication implements CommandLineRunner {
         private boolean validateUser(String username, String password) {
             // 从数据库中获取玩家信息
             Map<String, String> playerData = DatabaseManager.getPlayer(username);
-            
+    
             // 检查玩家是否存在且密码匹配
             if (playerData != null && playerData.get("password").equals(password)) {
+                player.setName(username); // 更新玩家名称
                 return true;
             }
-            
+    
             return false;
         }
 
         private String processRequest(String request) {
+            if (!isAuthenticated) {
+                return "请先完成登录！"; // 如果未验证，提示用户登录
+            }
             // 使用 MessageHandler 处理命令
             MessageHandler messageHandler = new MessageHandler(player);
             String response = messageHandler.handleMessage(request);
-        
+    
             // 检查响应是否为空或无效
             if (response == null || response.isEmpty()) {
                 return "无效的命令，请输入 help 查看可用命令。"; // 统一的错误提示
             }
-        
+    
             return response; // 返回合法命令的响应
         }
     }
