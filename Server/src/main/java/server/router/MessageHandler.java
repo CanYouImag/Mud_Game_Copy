@@ -49,19 +49,19 @@ public class MessageHandler {
     private String handleLookCommand() {
         Room currentRoom = player.getCurrentRoom();
         if (currentRoom == null) {
-            return "你似乎不在任何房间中。";
+            return "你似乎不在任何房间中，请尝试重新连接或联系管理员。";
         }
         return currentRoom.getDescription();
     }
 
     private String handleMoveCommand(String[] parts) {
         if (parts.length < 2) {
-            return "请指定移动方向。";
+            return "请指定移动方向。例如：move north 或 move n。";
         }
         String direction = parts[1].toLowerCase();
         Room currentRoom = player.getCurrentRoom();
         if (currentRoom == null) {
-            return "你似乎不在任何房间中。";
+            return "你似乎不在任何房间中，请尝试重新连接或联系管理员。";
         }
         try {
             Optional<Room> nextRoomOptional = currentRoom.getExit(Direction.valueOf(direction.toUpperCase()));
@@ -72,10 +72,12 @@ public class MessageHandler {
                 nextRoom.addPlayer(player);
                 return "你移动到了 " + nextRoom.getName() + "。\n" + nextRoom.getDescription();
             } else {
-                return "无法向该方向移动。";
+                return "无法向该方向移动，请检查方向是否正确。";
             }
         } catch (IllegalArgumentException e) {
             return "无效的方向，请输入 help 查看可用命令。";
+        } catch (Exception e) {
+            return "移动过程中发生错误，请稍后重试。";
         }
     }
 

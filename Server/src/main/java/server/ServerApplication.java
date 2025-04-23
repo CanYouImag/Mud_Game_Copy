@@ -1,5 +1,6 @@
 package server;
 
+import com.former.database.DatabaseManager;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -186,8 +187,15 @@ public class ServerApplication implements CommandLineRunner {
         }
 
         private boolean validateUser(String username, String password) {
-            // 这里可以调用数据库验证用户
-            return true; // 示例中直接返回 true
+            // 从数据库中获取玩家信息
+            Map<String, String> playerData = DatabaseManager.getPlayer(username);
+            
+            // 检查玩家是否存在且密码匹配
+            if (playerData != null && playerData.get("password").equals(password)) {
+                return true;
+            }
+            
+            return false;
         }
 
         private String processRequest(String request) {
