@@ -1,8 +1,8 @@
 package server;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "learned_skills")
@@ -12,8 +12,10 @@ public class LearnedSkill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(mappedBy = "learnedSkills")
-    private List<Player> players = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "player_learned_skills", joinColumns = @JoinColumn(name = "learned_skills_id"))
+    @Column(name = "player_name")
+    private Set<String> players = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "skill_id", nullable = false)
@@ -28,11 +30,11 @@ public class LearnedSkill {
         this.id = id;
     }
 
-    public List<Player> getPlayers() {
+    public Set<String> getPlayers() {
         return players;
     }
 
-    public void setPlayers(List<Player> players) {
+    public void setPlayers(Set<String> players) {
         this.players = players;
     }
 
