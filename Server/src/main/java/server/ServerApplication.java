@@ -116,7 +116,8 @@ public class ServerApplication implements CommandLineRunner {
                     JTextField inputField = new JTextField(30);
                     JButton sendButton = new JButton("发送");
                     inputPanel.add(inputField);
-                    inputPanel.add(sendButton);
+                    JButton loginButton = new JButton("登录");
+                    inputPanel.add(loginButton);
                     frame.add(inputPanel, BorderLayout.SOUTH);
 
                     JTextArea finalTextArea = textArea;
@@ -133,6 +134,21 @@ public class ServerApplication implements CommandLineRunner {
                                 finalTextArea.append(response + "\n"); // 使用 textArea 显示响应
                             }
                             inputField.setText("");
+                        }
+                    });
+
+                    loginButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            String username = JOptionPane.showInputDialog(frame, "请输入用户名：");
+                            String password = JOptionPane.showInputDialog(frame, "请输入密码：");
+                            if (validateUser(username, password)) {
+                                JOptionPane.showMessageDialog(frame, "登录成功！");
+                                isAuthenticated = true;
+                                finalTextArea.append("登录成功！\n");
+                            } else {
+                                JOptionPane.showMessageDialog(frame, "用户名或密码错误！");
+                            }
                         }
                     });
 
