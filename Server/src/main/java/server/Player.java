@@ -94,7 +94,7 @@ public class Player {
                 break;
             case "get":
                 if (args.length == 0) {
-                    out.println("我哪知道你要获得什么物品？请输入 'get [物品]'。");
+                    out.println("请输入 'get [物品]' 来获取物品。");
                 } else {
                     String itemName = args[0];
                     for (Items item : currentRoom.getItems()) {
@@ -102,7 +102,7 @@ public class Player {
                             currentRoom.removeItem(item);
                             inventory.add(item);
                             out.println("你获取了物品：" + item.getName());
-                            break;
+                            return;
                         }
                     }
                     out.println("物品 " + itemName + " 不存在于此房间。");
@@ -110,7 +110,7 @@ public class Player {
                 break;
             case "drop":
                 if (args.length == 0) {
-                    out.println("我哪知道你要扔什么东西？请输入 'drop [物品]'。");
+                    out.println("请输入 'drop [物品]' 来丢弃物品。");
                 } else {
                     String itemName = args[0];
                     for (Items item : inventory) {
@@ -118,7 +118,7 @@ public class Player {
                             inventory.remove(item);
                             currentRoom.addItem(item);
                             out.println("你丢弃了物品：" + item.getName());
-                            break;
+                            return;
                         }
                     }
                     out.println("你没有持有物品 " + itemName + "。");
@@ -126,13 +126,12 @@ public class Player {
                 break;
             case "say":
                 if (args.length == 0) {
-                    out.println("聊天命令缺少消息内容，请输入 'say [消息]'。");
+                    out.println("请输入 'say [消息]' 来发送消息。");
                 } else {
                     String message = String.join(" ", args);
                     currentRoom.broadcast(name + " says: " + message);
                 }
                 break;
-            // Add more directions and commands as needed
             default:
                 out.println("未知命令：" + command);
         }

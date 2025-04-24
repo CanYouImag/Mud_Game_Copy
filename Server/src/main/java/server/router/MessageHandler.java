@@ -82,12 +82,37 @@ public class MessageHandler {
     }
 
     private String handleGetCommand(String[] parts) {
-        // 实现获取物品的逻辑
-        return "暂未实现获取物品功能。";
+        if (parts.length < 2) {
+            return "请输入 'get [物品]' 来获取物品。";
+        }
+        String itemName = parts[1];
+        Room currentRoom = player.getCurrentRoom();
+        if (currentRoom == null) {
+            return "你似乎不在任何房间中，请尝试重新连接或联系管理员。";
+        }
+        for (Items item : currentRoom.getItems()) {
+            if (item.getName().equalsIgnoreCase(itemName)) {
+                currentRoom.removeItem(item);
+                player.addItem(item);
+                return "你获取了物品：" + item.getName();
+            }
+        }
+        return "物品 " + itemName + " 不存在于此房间。";
     }
 
     private String handleDropCommand(String[] parts) {
-        // 实现丢弃物品的逻辑
-        return "暂未实现丢弃物品功能。";
+        if (parts.length < 2) {
+            return "请输入 'drop [物品]' 来丢弃物品。";
+        }
+        String itemName = parts[1];
+        List<Items> inventory = player.getInventory();
+        for (Items item : inventory) {
+            if (item.getName().equalsIgnoreCase(itemName)) {
+                inventory.remove(item);
+                player.getCurrentRoom().addItem(item);
+                return "你丢弃了物品：" + item.getName();
+            }
+        }
+        return "你没有持有物品 " + itemName + "。";
     }
 }

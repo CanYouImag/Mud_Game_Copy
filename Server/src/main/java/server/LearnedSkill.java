@@ -1,6 +1,8 @@
 package server;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "learned_skills")
@@ -10,9 +12,8 @@ public class LearnedSkill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "player_id", nullable = false)
-    private Player player;
+    @ManyToMany(mappedBy = "learnedSkills")
+    private List<Player> players = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "skill_id", nullable = false)
@@ -27,12 +28,12 @@ public class LearnedSkill {
         this.id = id;
     }
 
-    public Player getPlayer() {
-        return player;
+    public List<Player> getPlayers() {
+        return players;
     }
 
-    public void setPlayer(Player player) {
-        this.player = player;
+    public void setPlayers(List<Player> players) {
+        this.players = players;
     }
 
     public Skill getSkill() {

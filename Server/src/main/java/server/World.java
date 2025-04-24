@@ -63,9 +63,19 @@ public class World {
             for (Room room : loadedRooms) {
                 rooms.put(room.getId(), room);
                 // 为每个房间生成初始物品
-                room.addItem(new Items("Rusty Sword", "A dull sword with some rust."));
-                room.addItem(new Items("Health Potion", "A potion that restores health."));
+                room.addItem(new Items("Rusty Sword", "一把生锈的剑。"));
+                room.addItem(new Items("Health Potion", "一瓶可以恢复生命值的药水。"));
             }
         }
+    }
+
+    // 新增方法: 添加房间
+    public void addRoom(Room room) {
+        rooms.put(room.getId(), room);
+    }
+
+    // 新增方法: 移除房间
+    public void removeRoom(String roomId) {
+        rooms.remove(roomId);
     }
 }
