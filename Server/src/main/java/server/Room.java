@@ -2,13 +2,12 @@ package server;
 
 import java.util.*;
 
-
 public class Room {
-    private static final Map<String, Room> rooms = new HashMap<>();
+    static final HashMap<String, Room> rooms = new HashMap<>();
     private String id;
     private String name;
     private String description;
-    private Map<Direction, Room> exits;
+    private HashMap<Direction, Room> exits;
     private List<Player> players;
     private List<Items> items;
 
@@ -30,9 +29,9 @@ public class Room {
     }
 
     private static void createRooms() {
-        Room startingRoom = new Room("001","Starting Room", "You are in a small, dimly lit room.");
-        Room northRoom = new Room("002","North Room", "You are in a large, open room with a high ceiling.");
-        Room eastRoom = new Room("003","East Room", "You are in a cozy, well-lit room with a fireplace.");
+        Room startingRoom = new Room("001", "Starting Room", "You are in a small, dimly lit room.");
+        Room northRoom = new Room("002", "North Room", "You are in a large, open room with a high ceiling.");
+        Room eastRoom = new Room("003", "East Room", "You are in a cozy, well-lit room with a fireplace.");
 
         startingRoom.setExit(Direction.NORTH, northRoom);
         startingRoom.setExit(Direction.EAST, eastRoom);
@@ -106,7 +105,7 @@ public class Room {
         }
     }
 
-    public Map<Direction, Room> getExits() {
+    public HashMap<Direction, Room> getExits() {
         return exits;
     }
 

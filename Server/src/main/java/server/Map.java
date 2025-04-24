@@ -2,6 +2,8 @@ package server;
 
 import javax.persistence.*;
 
+import static server.Room.*;
+
 @Entity
 @Table(name = "maps")
 public class Map {
@@ -10,10 +12,18 @@ public class Map {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String name;
+
     private String description;
+
     private int startX;
     private int startY;
+    private int width;
+    private int height;
+
+    @Column(columnDefinition = "TEXT")
+    private String layout;
 
     // Getters and Setters
     public Long getId() {
@@ -54,5 +64,9 @@ public class Map {
 
     public void setStartY(int startY) {
         this.startY = startY;
+    }
+
+    public boolean isEmpty() {
+        return rooms.isEmpty();
     }
 }
