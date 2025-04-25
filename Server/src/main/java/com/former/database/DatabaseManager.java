@@ -8,8 +8,8 @@ import java.util.*;
 
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/mud_game?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "CWai@3210979";
+    private static final String DB_USER = "XXX";        //此处需要把数据库用户名和密码替换为实际的值
+    private static final String DB_PASSWORD = "XXX";
 
     // 修改: 生成八位长的唯一数字字符串
     public static String generateUniquePlayerId() {
