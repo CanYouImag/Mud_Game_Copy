@@ -4,6 +4,7 @@ import server.Room;
 
 import java.sql.*;
 import java.util.*;
+import static java.sql.DriverManager.*;
 
 
 public class DatabaseManager {
@@ -14,7 +15,7 @@ public class DatabaseManager {
     // 修改: 生成八位长的唯一数字字符串
     public static String generateUniquePlayerId() {
         String playerId;
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
              Statement stmt = conn.createStatement()) {
             do {
                 // 生成八位随机数字字符串
@@ -49,7 +50,7 @@ public class DatabaseManager {
                 "height INT NOT NULL, " +
                 "layout TEXT)";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
              Statement stmt = conn.createStatement()) {
             stmt.execute(createMapsTable);
         } catch (SQLException e) {
@@ -61,7 +62,7 @@ public class DatabaseManager {
     public static void savePlayer(String name, String password) {
         String playerId = generateUniquePlayerId(); // 生成唯一 player_id
         String sql = "INSERT INTO players (player_id, name, passwd) VALUES (?, ?, ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, playerId); // 插入 player_id
             pstmt.setString(2, name);
@@ -75,7 +76,7 @@ public class DatabaseManager {
     // 修改: 使用 PreparedStatement 避免 SQL 注入风险
     public static Map<String, String> getPlayer(String name) {
         String sql = "SELECT * FROM players WHERE name = ?";
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, name);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -92,11 +93,53 @@ public class DatabaseManager {
         return null;
     }
 
+    public boolean registerUser(String username, String id, String password) {
+        // 检查用户名和ID是否已存在
+        if (isUserExists(username, id)) {
+            System.out.println("注册失败：用户名或ID已存在");
+            return false;
+        }
+
+        // 插入新用户
+        String sql = "INSERT INTO players (name, player_id, passwd) VALUES (?, ?, ?)";
+        try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, id);
+            pstmt.setString(3, password);
+            pstmt.executeUpdate();
+            System.out.println("注册成功");
+            return true;
+        } catch (SQLException e) {
+            System.out.println("注册失败：" + e.getMessage());
+            return false;
+        }
+    }
+
+
+
+    private boolean isUserExists(String username, String id) {
+        String sql = "SELECT COUNT(*) FROM players WHERE name = ? OR player_id = ?";
+        try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("检查用户是否存在时出错：" + e.getMessage());
+        }
+        return false;
+    }
+
     // 修改: 返回 List<Room> 而非 List<Map>
     public static List<Room> loadRooms() {
         List<Room> rooms = new ArrayList<>();
         String sql = "SELECT * FROM rooms";
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
              Statement stmt = conn.createStatement()) {
             try (ResultSet rs = stmt.executeQuery(sql)) {
                 while (rs.next()) {
