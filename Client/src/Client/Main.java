@@ -80,9 +80,14 @@ public class Main {
 
     // 模拟注册逻辑
     private static boolean registerUser(String username, String password) {
-        // 这里应该调用数据库操作
-        System.out.println("注册用户: " + username);
-        return true; // 假设注册成功
+        // 调用数据库操作进行用户注册
+        try {
+            com.former.database.DatabaseManager.savePlayer(username, password);
+            return true; // 注册成功
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false; // 注册失败
+        }
     }
 
     // 模拟登录逻辑

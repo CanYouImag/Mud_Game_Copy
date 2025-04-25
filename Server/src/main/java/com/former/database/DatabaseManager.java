@@ -11,6 +11,24 @@ public class DatabaseManager {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "CWai@3210979";
 
+    // 新增方法：生成唯一的 player_id
+    public static String generateUniquePlayerId() {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            // 查询当前最大的 player_id
+            String query = "SELECT MAX(CAST(player_id AS UNSIGNED)) AS max_id FROM players";
+            try (ResultSet rs = stmt.executeQuery(query)) {
+                if (rs.next()) {
+                    int maxId = rs.getInt("max_id");
+                    return String.valueOf(maxId + 1); // 返回下一个唯一 ID
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "1"; // 如果表为空，返回初始 ID
+    }
+
     public static void initialize() {
         // 创建 maps 表
         String createMapsTable = "CREATE TABLE IF NOT EXISTS maps (" +
@@ -31,13 +49,15 @@ public class DatabaseManager {
         }
     }
 
-    // 修改: 使用 PreparedStatement 避免 SQL 注入风险
+    // 修改: 使用 PreparedStatement 避免 SQL 注入风险，并插入 player_id
     public static void savePlayer(String name, String password) {
-        String sql = "INSERT INTO players (name, passwd) VALUES (?, ?)";
+        String playerId = generateUniquePlayerId(); // 生成唯一 player_id
+        String sql = "INSERT INTO players (player_id, name, passwd) VALUES (?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, name);
-            pstmt.setString(2, password);
+            pstmt.setString(1, playerId); // 插入 player_id
+            pstmt.setString(2, name);
+            pstmt.setString(3, password);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
