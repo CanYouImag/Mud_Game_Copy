@@ -11,22 +11,30 @@ public class DatabaseManager {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "CWai@3210979";
 
-    // 新增方法：生成唯一的 player_id
+    // 修改: 生成八位长的唯一数字字符串
     public static String generateUniquePlayerId() {
+        String playerId;
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              Statement stmt = conn.createStatement()) {
-            // 查询当前最大的 player_id
-            String query = "SELECT MAX(CAST(player_id AS UNSIGNED)) AS max_id FROM players";
-            try (ResultSet rs = stmt.executeQuery(query)) {
-                if (rs.next()) {
-                    int maxId = rs.getInt("max_id");
-                    return String.valueOf(maxId + 1); // 返回下一个唯一 ID
+            do {
+                // 生成八位随机数字字符串
+                playerId = String.format("%08d", new Random().nextInt(100000000));
+                // 检查生成的ID是否已存在
+                String query = "SELECT COUNT(*) FROM players WHERE player_id = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                    pstmt.setString(1, playerId);
+                    try (ResultSet rs = pstmt.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) == 0) {
+                            // 如果ID不存在，则返回
+                            return playerId;
+                        }
+                    }
                 }
-            }
+            } while (true); // 无限循环，直到找到唯一的ID
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("无法生成唯一的玩家ID", e);
         }
-        return "1"; // 如果表为空，返回初始 ID
     }
 
     public static void initialize() {
