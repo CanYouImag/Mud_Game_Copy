@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.*;
 
 public class Main {
 	public static void main(String[] args) {
@@ -90,18 +91,22 @@ public class Main {
 		}
 	}
 
-	// 模拟登录逻辑
+	// 新增登录逻辑函数
 	private static boolean loginUser(String username, String password) {
-		// 这里应该调用数据库操作
-		System.out.println("登录用户: " + username);
-		return true; // 假设登录成功
+	    // 调用数据库操作进行用户验证
+	    try {
+	        Map<String, String> playerData = com.former.database.DatabaseManager.getPlayer(username);
+	        if (playerData != null && playerData.get("passwd").equals(password)) {
+	            return true; // 登录成功
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return false; // 登录失败
 	}
 
 	// 打开游戏界面
 	private static void openGameInterface() {
-		// 这里应该打开游戏界面
-		System.out.println("打开游戏界面...");
-
 		// 游戏客户端逻辑
 		String serverAddress = "localhost"; // 后端服务器地址
 		int serverPort = 3080; // 后端服务器端口

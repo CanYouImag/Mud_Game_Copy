@@ -4,18 +4,17 @@ import server.Room;
 
 import java.sql.*;
 import java.util.*;
-import static java.sql.DriverManager.*;
 
 
 public class DatabaseManager {
-	private static final String DB_URL = "jdbc:mysql://localhost:3306/mud_game?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-	private static final String DB_USER = "XXX";        //此处需要把数据库用户名和密码替换为实际的值
-	private static final String DB_PASSWORD = "XXX";
+	public static final String DB_URL = "jdbc:mysql://localhost:3306/mud_game?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+	public static final String DB_USER = "XXX";        //此处需要把数据库用户名和密码替换为实际的值
+	public static final String DB_PASSWORD = "XXX";
 
 	// 修改: 生成八位长的唯一数字字符串
 	public static String generateUniquePlayerId() {
 		String playerId;
-		try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
+		try (Connection conn =  getConnection(DB_URL, DB_USER, DB_PASSWORD);
 			 Statement stmt = conn.createStatement()) {
 			do {
 				// 生成八位随机数字字符串
@@ -83,7 +82,7 @@ public class DatabaseManager {
 				if (rs.next()) {
 					Map<String, String> playerData = new HashMap<>();
 					playerData.put("name", rs.getString("name"));
-					playerData.put("password", rs.getString("password"));
+					playerData.put("passwd", rs.getString("passwd"));
 					return playerData;
 				}
 			}
@@ -113,6 +112,16 @@ public class DatabaseManager {
         }
         return false;
     }
+
+	public static Connection getConnection(String dbUrl, String dbUser, String dbPassword) {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+		} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	public boolean registerUser(String username, String id, String password) {
 		// 检查用户名和ID是否已存在
