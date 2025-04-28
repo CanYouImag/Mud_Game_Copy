@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
-
+import server.router.*;
 public class Main {
 	public static void main(String[] args) {
 		// 创建主窗口
@@ -135,8 +135,21 @@ public class Main {
 
 				// 检查是否输入 'exit' 以退出
 				if ("exit".equalsIgnoreCase(userInput)) {
-					System.out.println("退出程序。");
-					break;
+					System.out.println("是否直接退出程序？Y/N");
+					Scanner sc = new Scanner(System.in);
+					char Input=sc.next().charAt(0);
+					if(Input=='Y'){
+						System.out.println("退出程序。");
+						break;
+					}else if(Input=='N'){
+						System.out.println("好的，请继续游戏吧。");
+						continue;
+					}else{
+						System.out.print("\r"); // 清除当前行
+						System.out.print(" "); // 覆盖输入
+						System.out.print("\r"); // 返回行首
+						System.out.println("无效输入，请重新输入！");
+					}
 				} else if ("help".equalsIgnoreCase(userInput)) {
 					System.out.println("可用命令：");
 					System.out.println("  look - 查看当前房间");
@@ -146,6 +159,24 @@ public class Main {
 					System.out.println("  quit - 退出游戏");
 					System.out.println("  help - 查看帮助");
 					System.out.println("  exit - 退出程序");
+				} else if ("quit".equalsIgnoreCase(userInput)) {
+					System.out.println("是否退出游戏？Y/N");
+					Scanner sc = new Scanner(System.in);
+					char Input=sc.next().charAt(0);
+					if(Input=='Y'){
+						System.out.println("退出游戏。");
+						break;
+					}else if(Input=='N'){
+						System.out.println("好的，请继续游戏吧。");
+						continue;
+					}else{
+						System.out.print("\r"); // 清除当前行
+						System.out.print(" "); // 覆盖输入
+						System.out.print("\r"); // 返回行首
+						System.out.println("无效输入，请重新输入！");
+					}
+				} else{
+					System.out.println(MessageHandler.handleMessage(userInput));
 				}
 
 				// 读取服务器端的回复
