@@ -53,7 +53,11 @@ public class Main {
 				if (registerUser(username, password)) {
 					JOptionPane.showMessageDialog(frame, "注册成功！");
 				} else {
-					JOptionPane.showMessageDialog(frame, "注册失败，请重试！");
+					if(com.former.database.DatabaseManager.isUsernameExists(username)){
+						JOptionPane.showMessageDialog(frame, "用户名已存在，请重新注册！");
+					}else{
+						JOptionPane.showMessageDialog(frame, "注册失败，请重试！");
+					}
 				}
 			}
 		});
@@ -81,6 +85,10 @@ public class Main {
 
 	// 模拟注册逻辑
 	private static boolean registerUser(String username, String password) {
+		// 检查用户名是否已存在
+		if (com.former.database.DatabaseManager.isUsernameExists(username)) {
+			return false; // 用户名已存在，返回 false
+		}
 		// 调用数据库操作进行用户注册
 		try {
 			com.former.database.DatabaseManager.savePlayer(username, password);

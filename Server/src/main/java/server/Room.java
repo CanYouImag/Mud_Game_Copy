@@ -25,7 +25,7 @@ public class Room {
 		if (rooms.isEmpty()) {
 			createRooms();
 		}
-		return rooms.get("Starting Room");
+		return rooms.get("001"); // 修改为 "001" 以匹配 createRooms() 中的房间 ID
 	}
 
 	private static void createRooms() {
@@ -36,9 +36,9 @@ public class Room {
 		startingRoom.setExit(Direction.NORTH, northRoom);
 		startingRoom.setExit(Direction.EAST, eastRoom);
 
-		rooms.put("Starting Room", startingRoom);
-		rooms.put("North Room", northRoom);
-		rooms.put("East Room", eastRoom);
+		rooms.put("001", startingRoom); // 修改为 "001" 以匹配 getStartingRoom() 中的键
+		rooms.put("002", northRoom);
+		rooms.put("003", eastRoom);
 	}
 
 	public void setExit(Direction direction, Room room) {

@@ -8,8 +8,8 @@ import java.util.*;
 
 public class DatabaseManager {
 	public static final String DB_URL = "jdbc:mysql://localhost:3306/mud_game?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-	public static final String DB_USER = "XXX";        //此处需要把数据库用户名和密码替换为实际的值
-	public static final String DB_PASSWORD = "XXX";
+	public static final String DB_USER = "root";        //此处需要把数据库用户名和密码替换为实际的值
+	public static final String DB_PASSWORD = "CWai@3210979";
 
 	// 修改: 生成八位长的唯一数字字符串
 	public static String generateUniquePlayerId() {
@@ -49,12 +49,14 @@ public class DatabaseManager {
 				"height INT NOT NULL, " +
 				"layout TEXT)";
 
+
 		try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
 			 Statement stmt = conn.createStatement()) {
 			stmt.execute(createMapsTable);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
 	}
 
 	// 修改: 使用 PreparedStatement 避免 SQL 注入风险，并插入 player_id
@@ -94,10 +96,7 @@ public class DatabaseManager {
 
     /**
      * 检查用户名是否已存在
-     *
-     * @param username 用户名
-     * @return 如果用户名已存在返回 true，否则返回 false
-     */
+     **/
     public static boolean isUsernameExists(String username) {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) FROM players WHERE name = ?")) {
