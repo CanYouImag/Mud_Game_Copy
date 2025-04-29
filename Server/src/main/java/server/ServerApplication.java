@@ -224,7 +224,7 @@ public class ServerApplication implements CommandLineRunner {
             }
             // 使用 MessageHandler 处理命令
             MessageHandler messageHandler = new MessageHandler(player);
-            String response = messageHandler.handleMessage(request);
+            String response = messageHandler.processCommand(request);
 
             // 检查响应是否为空或无效
             if (response == null || response.isEmpty()) {

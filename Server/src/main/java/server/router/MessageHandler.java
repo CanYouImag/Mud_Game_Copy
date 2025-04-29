@@ -13,25 +13,26 @@ public class MessageHandler {
         this.player = player; // 在构造函数中初始化 player
     }
 
-    public String handleMessage(String message) { // 保持 handleMessage 为实例方法
-        if (message == null || message.isEmpty()) {
-            return "无效的命令，请输入 help 查看可用命令。"; // 返回无效命令提示
+    public String processCommand(String command) {
+        if (command == null || command.isEmpty()) {
+            return "无效的命令，请输入 help 查看可用命令。";
         }
 
-        String[] parts = message.split(" ");
-        String command = parts[0].toLowerCase();
+        String[] parts = command.split(" ");
+        String commandName = parts[0].toLowerCase();
+        String[] args = Arrays.copyOfRange(parts, 1, parts.length);
 
-        switch (command) {
+        switch (commandName) {
             case "look":
-                return handleLookCommand(); // 返回当前房间的描述
+                return handleLookCommand();
             case "move":
-                return handleMoveCommand(parts); // 返回移动后的房间描述
+                return handleMoveCommand(args);
             case "get":
-                return handleGetCommand(parts); // 返回获取物品的结果
+                return handleGetCommand(Arrays.toString(args));
             case "drop":
-                return handleDropCommand(parts); // 返回丢弃物品的结果
+                return handleDropCommand(args);
             default:
-                return "无效的命令，请输入 help 查看可用命令。"; // 返回无效命令提示
+                return "无效的命令，请输入 help 查看可用命令。";
         }
     }
 
@@ -70,15 +71,17 @@ public class MessageHandler {
         }
     }
 
-    private String handleGetCommand(String[] parts) {
-        if (parts.length < 2) {
+    private String handleGetCommand(String command) {
+        if (command == null || command.isEmpty()) {
             return "请输入 'get [物品]' 来获取物品。"; // 返回提示信息
         }
-        String itemName = parts[1];
+        
         Room currentRoom = player.getCurrentRoom();
         if (currentRoom == null) {
             return "你似乎不在任何房间中，请尝试重新连接或联系管理员。"; // 返回错误提示
         }
+        
+        String itemName = command.trim();
         for (Items item : currentRoom.getItems()) {
             if (item.getName().equalsIgnoreCase(itemName)) {
                 currentRoom.removeItem(item);
@@ -86,6 +89,7 @@ public class MessageHandler {
                 return "你获取了物品：" + item.getName(); // 返回获取物品的结果
             }
         }
+        
         return "物品 " + itemName + " 不存在于此房间。"; // 返回错误提示
     }
 

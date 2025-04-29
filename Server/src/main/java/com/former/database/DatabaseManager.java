@@ -168,6 +168,40 @@ public class DatabaseManager {
 		return false;
 	}
 
+	// 新增方法: 获取初始房间的 ID
+	public static String getStartingRoomId() {
+	    String sql = "SELECT id FROM rooms WHERE name = '初始房间'";
+	    try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
+	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+	        try (ResultSet rs = pstmt.executeQuery()) {
+	            if (rs.next()) {
+	                return rs.getString("id");
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    // 如果没有找到初始房间，默认返回 "001"
+	    return "001";
+	}
+
+	// 新增方法: 获取初始地图的 ID
+	public static String getStartingMapId() {
+	    String sql = "SELECT id FROM maps WHERE name = '初始地图'";
+	    try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
+	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+	        try (ResultSet rs = pstmt.executeQuery()) {
+	            if (rs.next()) {
+	                return rs.getString("id");
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    // 如果没有找到初始地图，默认返回 "1"
+	    return "1";
+	}
+
 	// 修改: 返回 List<Room> 而非 List<Maps>
 	public static List<Room> loadRooms() {
 		List<Room> rooms = new ArrayList<>();

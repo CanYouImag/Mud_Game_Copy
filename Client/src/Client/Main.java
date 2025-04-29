@@ -197,8 +197,8 @@ public class Main {
 					System.out.println("  help - 查看帮助");
 					System.out.println("  exit - 退出程序");
 				} else {
-					// 使用 MessageHandler 处理用户输入
-					String response = messageHandler.handleMessage(userInput);
+					// 使用 MessageHandler 的 processCommand 方法处理用户输入
+					String response = messageHandler.processCommand(userInput);
 					System.out.println(response);
 				}
 

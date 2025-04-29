@@ -1,7 +1,7 @@
 package server;
 
 import server.router.MessageHandler;
-
+import com.former.database.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -30,13 +30,13 @@ public class Player {
 	}
 
 	// 新增构造函数：接受 name 和 password 参数，并初始化 currentRoomId 和 currentMapId 为默认值
-	//谁让是注册用户呢
 	public Player(String name, String password) {
 		this.name = name;
 		this.password = password;
 		this.inventory = new ArrayList<>();
-		this.currentRoomId = "001"; // 默认房间ID
-		this.currentMapId = "1";    // 默认地图ID
+		// 从数据库获取初始房间和地图的 ID
+		this.currentRoomId = DatabaseManager.getStartingRoomId();
+		this.currentMapId = DatabaseManager.getStartingMapId();
 	}
 
 	public Player(BufferedReader in, PrintWriter out){
@@ -52,12 +52,18 @@ public class Player {
 			out.println("好的，" + name + "！你现在位于初始大厅。");
 			currentRoom.addPlayer(this);
 
+			// 登录成功后自动执行 look 命令
+			String response = processCommand("look");
+			if (response != null && !response.isEmpty()) {
+				out.println(response);
+			}
+
 			MessageHandler messageHandler = new MessageHandler(this);
 			String input;
 			while ((input = in.readLine()) != null) {
-				String response = messageHandler.handleMessage(input);
-				if (response != null && !response.isEmpty()) {
-					out.println(response);
+				String response1 = processCommand(input);
+				if (response1 != null && !response1.isEmpty()) {
+					out.println(response1);
 				}
 			}
 		} catch (IOException e) {
@@ -76,7 +82,7 @@ public class Player {
 		}
 	}
 
-	private void processCommand(String command) {
+	public String processCommand(String command) {
 		String[] parts = command.split(" ");
 		String commandName = parts[0].toLowerCase();
 		String[] args = Arrays.copyOfRange(parts, 1, parts.length);
@@ -84,70 +90,63 @@ public class Player {
 		switch (commandName) {
 			case "look":
 			case "l":
-				out.println(currentRoom.getDescription());
-				break;
+				return currentRoom.getDescription();
 			case "quit":
-				out.println("非常感谢您的游玩，" + name + "再见！");
-				currentRoom.removePlayer(this);
-				break;
+				return "非常感谢您的游玩，" + name + "再见！";
 			case "north":
 			case "n":
 				move(Direction.NORTH);
-				break;
+				return "你去往北。";
 			case "south":
 			case "s":
 				move(Direction.SOUTH);
-				break;
+				return "你去往南。";
 			case "east":
 			case "e":
 				move(Direction.EAST);
-				break;
+				return "你去往东。";
 			case "west":
 			case "w":
 				move(Direction.WEST);
-				break;
+				return "你去往西。";
 			case "get":
 				if (args.length == 0) {
-					out.println("请输入 'get [物品]' 来获取物品。");
+					return "请输入 'get [物品]' 来获取物品。";
 				} else {
 					String itemName = args[0];
 					for (Items item : currentRoom.getItems()) {
 						if (item.getName().equalsIgnoreCase(itemName)) {
 							currentRoom.removeItem(item);
 							inventory.add(item);
-							out.println("你获取了物品：" + item.getName());
-							return;
+							return "你获取了物品：" + item.getName();
 						}
 					}
-					out.println("物品 " + itemName + " 不存在于此房间。");
+					return "物品 " + itemName + " 不存在于此房间。";
 				}
-				break;
 			case "drop":
 				if (args.length == 0) {
-					out.println("请输入 'drop [物品]' 来丢弃物品。");
+					return "请输入 'drop [物品]' 来丢弃物品。";
 				} else {
 					String itemName = args[0];
 					for (Items item : inventory) {
 						if (item.getName().equalsIgnoreCase(itemName)) {
 							inventory.remove(item);
 							currentRoom.addItem(item);
-							out.println("你丢弃了物品：" + item.getName());
-							return;
+							return "你丢弃了物品：" + item.getName();
 						}
 					}
-					out.println("你没有持有物品 " + itemName + "。");
+					return "你没有持有物品 " + itemName + "。";
 				}
-				break;
 			case "say":
 				if (args.length == 0) {
-					out.println("请输入 'say [消息]' 来发送消息。");
+					return "请输入 'say [消息]' 来发送消息。";
 				} else {
 					String message = String.join(" ", args);
 					currentRoom.broadcast(name + " says: " + message);
+					return "你发送了消息：" + message;
 				}
-				break;
 			default:
-				out.println("未知命令：" + command);
+				return "未知命令：" + command;
 		}
 	}
 
