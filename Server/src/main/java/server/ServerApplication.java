@@ -98,6 +98,9 @@ public class ServerApplication implements CommandLineRunner {
                 player.setCurrentRoom(startingRoom);
                 startingRoom.addPlayer(player);
 
+                // 确保 MessageHandler 实例化时传入有效的 Player 对象
+                MessageHandler messageHandler = new MessageHandler(player);
+
                 // 检查是否为 headless 模式
                 boolean isHeadless = GraphicsEnvironment.isHeadless();
 
@@ -222,12 +225,12 @@ public class ServerApplication implements CommandLineRunner {
             // 使用 MessageHandler 处理命令
             MessageHandler messageHandler = new MessageHandler(player);
             String response = messageHandler.handleMessage(request);
-    
+
             // 检查响应是否为空或无效
             if (response == null || response.isEmpty()) {
                 return "无效的命令，请输入 help 查看可用命令。"; // 统一的错误提示
             }
-    
+
             return response; // 返回合法命令的响应
         }
     }

@@ -23,7 +23,7 @@ public class World {
 
 	public void registerPlayer(Player player) {
 		players.put(player.getName(), player);
-		DatabaseManager.savePlayer(player.getName(), player.getPassword());
+		DatabaseManager.savePlayer(player.getName(), player.getPassword(),player.getCurrentRoomId(),player.getCurrentMapId());
 	}
 
 	public Player getPlayer(String name) {
@@ -34,7 +34,7 @@ public class World {
 			Map<String, String> playerData = DatabaseManager.getPlayer(name);
 			if (playerData != null) {
 				// 创建 Player 对象并添加到内存中
-				player = new Player(playerData.get("name"), playerData.get("password"));
+				player = new Player(playerData.get("name"), playerData.get("password"),  playerData.get("currentRoomId"), playerData.get("currentMapId"));
 				players.put(name, player);
 			}
 		}

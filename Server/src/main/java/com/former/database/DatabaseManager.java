@@ -8,8 +8,8 @@ import java.util.*;
 
 public class DatabaseManager {
 	public static final String DB_URL = "jdbc:mysql://localhost:3306/mud_game?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-	public static final String DB_USER = "XXX";        //此处需要把数据库用户名和密码替换为实际的值
-	public static final String DB_PASSWORD = "XXX";
+	public static final String DB_USER = "root";        //此处需要把数据库用户名和密码替换为实际的值
+	public static final String DB_PASSWORD = "CWai@3210979";
 
 	// 修改: 生成八位长的唯一数字字符串
 	public static String generateUniquePlayerId() {
@@ -60,14 +60,16 @@ public class DatabaseManager {
 	}
 
 	// 修改: 使用 PreparedStatement 避免 SQL 注入风险，并插入 player_id
-	public static void savePlayer(String name, String password) {
+	public static void savePlayer(String name, String password, String currentRoomId, String currentMapId) {
 		String playerId = generateUniquePlayerId(); // 生成唯一 player_id
-		String sql = "INSERT INTO players (player_id, name, passwd) VALUES (?, ?, ?)";
+		String sql = "INSERT INTO players (player_id, name, passwd, current_room_id, current_map_id) VALUES (?, ?, ?, ?, ?)";
 		try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
 			 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 			pstmt.setString(1, playerId); // 插入 player_id
 			pstmt.setString(2, name);
 			pstmt.setString(3, password);
+			pstmt.setString(4, currentRoomId); // 插入当前房间ID
+			pstmt.setString(5, currentMapId); // 插入当前地图ID
 			pstmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -85,6 +87,8 @@ public class DatabaseManager {
 					Map<String, String> playerData = new HashMap<>();
 					playerData.put("name", rs.getString("name"));
 					playerData.put("passwd", rs.getString("passwd"));
+					playerData.put("currentRoomId", rs.getString("current_room_id")); // 获取当前房间ID
+					playerData.put("currentMapId", rs.getString("current_map_id")); // 获取当前地图ID
 					return playerData;
 				}
 			}
@@ -164,7 +168,7 @@ public class DatabaseManager {
 		return false;
 	}
 
-	// 修改: 返回 List<Room> 而非 List<Map>
+	// 修改: 返回 List<Room> 而非 List<Maps>
 	public static List<Room> loadRooms() {
 		List<Room> rooms = new ArrayList<>();
 		String sql = "SELECT * FROM rooms";

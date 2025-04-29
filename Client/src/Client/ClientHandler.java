@@ -29,7 +29,7 @@ public class ClientHandler extends Thread implements Runnable {
 			while ((message = in.readLine()) != null) {
 				try {
 					LOGGER.info("收到玩家命令：" + message);
-					String response = MessageHandler.handleMessage(message); // 使用 messageHandler 处理消息
+					String response = messageHandler.handleMessage(message); // 使用 messageHandler 实例处理消息
 					System.out.println("返回命令：" + response);
 
 					if (response.equals("quit")) {

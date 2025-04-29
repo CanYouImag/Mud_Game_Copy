@@ -14,15 +14,29 @@ public class Player {
 	private String name;
 	private String password;
 	private Room currentRoom;
+	private String currentRoomId; // 新增字段：当前房间ID
+	private String currentMapId; // 新增字段：当前地图ID
 	private PrintWriter out; // 添加输出流字段
 	private BufferedReader in; // 添加输入流字段
 	private Socket socket;
 
 	// 新增构造函数：仅用于数据库加载场景
+	public Player(String name, String password, String currentRoomId, String currentMapId) {
+		this.name = name;
+		this.password = password;
+		this.inventory = new ArrayList<>();
+		this.currentRoomId = currentRoomId;
+		this.currentMapId = currentMapId;
+	}
+
+	// 新增构造函数：接受 name 和 password 参数，并初始化 currentRoomId 和 currentMapId 为默认值
+	//谁让是注册用户呢
 	public Player(String name, String password) {
 		this.name = name;
 		this.password = password;
 		this.inventory = new ArrayList<>();
+		this.currentRoomId = "001"; // 默认房间ID
+		this.currentMapId = "1";    // 默认地图ID
 	}
 
 	public Player(BufferedReader in, PrintWriter out){
@@ -191,6 +205,23 @@ public class Player {
 	}
 	public Socket getSocket() {
 		return socket;
+	}
+
+	// 新增 getter 和 setter 方法
+	public String getCurrentRoomId() {
+		return currentRoomId;
+	}
+
+	public void setCurrentRoomId(String currentRoomId) {
+		this.currentRoomId = currentRoomId;
+	}
+
+	public String getCurrentMapId() {
+		return currentMapId;
+	}
+
+	public void setCurrentMapId(String currentMapId) {
+		this.currentMapId = currentMapId;
 	}
 
 	// 新增 setOut 方法

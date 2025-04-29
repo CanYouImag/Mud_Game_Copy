@@ -7,13 +7,13 @@ import server.Direction;
 import java.util.*;
 
 public class MessageHandler {
-    private static Player player;
+    private Player player; // 将 player 改为实例变量
 
     public MessageHandler(Player player) {
-        MessageHandler.player = player;
+        this.player = player; // 在构造函数中初始化 player
     }
 
-    public static String handleMessage(String message) {
+    public String handleMessage(String message) { // 保持 handleMessage 为实例方法
         if (message == null || message.isEmpty()) {
             return "无效的命令，请输入 help 查看可用命令。"; // 返回无效命令提示
         }
@@ -35,7 +35,7 @@ public class MessageHandler {
         }
     }
 
-    private static String handleLookCommand() {
+    private String handleLookCommand() {
         Room currentRoom = player.getCurrentRoom();
         if (currentRoom == null) {
             return "你似乎不在任何房间中，请尝试重新连接或联系管理员。"; // 返回错误提示
@@ -43,7 +43,7 @@ public class MessageHandler {
         return currentRoom.getDescription(); // 返回当前房间的详细描述
     }
 
-    private static String handleMoveCommand(String[] parts) {
+    private String handleMoveCommand(String[] parts) {
         if (parts.length < 2) {
             return "请指定移动方向。例如：move north 或 move n。"; // 返回提示信息
         }
@@ -70,7 +70,7 @@ public class MessageHandler {
         }
     }
 
-    private static String handleGetCommand(String[] parts) {
+    private String handleGetCommand(String[] parts) {
         if (parts.length < 2) {
             return "请输入 'get [物品]' 来获取物品。"; // 返回提示信息
         }
@@ -89,7 +89,7 @@ public class MessageHandler {
         return "物品 " + itemName + " 不存在于此房间。"; // 返回错误提示
     }
 
-    private static String handleDropCommand(String[] parts) {
+    private String handleDropCommand(String[] parts) {
         if (parts.length < 2) {
             return "请输入 'drop [物品]' 来丢弃物品。"; // 返回提示信息
         }

@@ -11,6 +11,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
 import server.router.*;
+import server.*;
+
 public class Main {
 	public static void main(String[] args) {
 		// 创建主窗口
@@ -85,19 +87,23 @@ public class Main {
 
 	// 模拟注册逻辑
 	private static boolean registerUser(String username, String password) {
-		// 检查用户名是否已存在
-		if (com.former.database.DatabaseManager.isUsernameExists(username)) {
-			return false; // 用户名已存在，返回 false
-		}
-		// 调用数据库操作进行用户注册
-		try {
-			com.former.database.DatabaseManager.savePlayer(username, password);
-			return true; // 注册成功
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false; // 注册失败
-		}
+	    // 检查用户名是否已存在
+	    if (com.former.database.DatabaseManager.isUsernameExists(username)) {
+	        return false; // 用户名已存在，返回 false
+	    }
+	    // 调用数据库操作进行用户注册
+	    try {
+	        // 假设我们有一个方法来获取玩家上次下线时所在的房间ID和地图ID
+	        String lastRoomId = getRoomId(username); // 获取玩家上次下线时所在的房间ID
+	        String lastMapId = getMapId(username);   // 获取玩家上次下线时所在的地图ID
+	        com.former.database.DatabaseManager.savePlayer(username, password, lastRoomId, lastMapId);
+	        return true; // 注册成功
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return false; // 注册失败
+	    }
 	}
+
 
 	// 新增登录逻辑函数
 	private static boolean loginUser(String username, String password) {
@@ -111,6 +117,32 @@ public class Main {
 	        e.printStackTrace();
 	    }
 	    return false; // 登录失败
+	}
+
+	private static String getMapId(String username) {
+	    // 从数据库中获取玩家上次下线时所在的地图ID
+	    try {
+	        Map<String, String> playerData = com.former.database.DatabaseManager.getPlayer(username);
+	        if (playerData != null) {
+	            return playerData.get("currentMapId");
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return "1"; // 默认地图ID
+	}
+
+	private static String getRoomId(String username) {
+	    // 从数据库中获取玩家上次下线时所在的房间ID
+	    try {
+	        Map<String, String> playerData = com.former.database.DatabaseManager.getPlayer(username);
+	        if (playerData != null) {
+	            return playerData.get("currentRoomId");
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return "001"; // 默认房间ID
 	}
 
 	// 打开游戏界面
@@ -127,6 +159,12 @@ public class Main {
 			System.out.println("连接到服务器 " + serverAddress + " 的端口 " + serverPort);
 			System.out.println("输入消息后按回车发送，输入 help 查看命令，输入 'exit' 退出：");
 
+			// 创建一个临时 Player 对象（实际应用中应从服务器获取玩家信息）
+			Player player = new Player("Guest", "password");
+
+			// 创建 MessageHandler 实例并传入 Player 对象
+			MessageHandler messageHandler = new MessageHandler(player);
+
 			String userInput;
 			while ((userInput = stdIn.readLine()) != null) {
 				// 发送用户输入到后端
@@ -137,18 +175,17 @@ public class Main {
 				if ("exit".equalsIgnoreCase(userInput)) {
 					System.out.println("是否直接退出程序？Y/N");
 					Scanner sc = new Scanner(System.in);
-					char Input=sc.next().charAt(0);
-					if(Input=='Y'){
+					char Input = sc.next().charAt(0);
+					if (Input == 'Y') {
 						System.out.println("退出程序。");
 						break;
-					}else if(Input=='N'){
+					} else if (Input == 'N') {
 						System.out.println("好的，请继续游戏吧。");
 						continue;
-					}else{
+					} else {
 						System.out.print("\r"); // 清除当前行
 						System.out.print(" "); // 覆盖输入
 						System.out.print("\r"); // 返回行首
-						System.out.println("无效输入，请重新输入！");
 					}
 				} else if ("help".equalsIgnoreCase(userInput)) {
 					System.out.println("可用命令：");
@@ -159,24 +196,10 @@ public class Main {
 					System.out.println("  quit - 退出游戏");
 					System.out.println("  help - 查看帮助");
 					System.out.println("  exit - 退出程序");
-				} else if ("quit".equalsIgnoreCase(userInput)) {
-					System.out.println("是否退出游戏？Y/N");
-					Scanner sc = new Scanner(System.in);
-					char Input=sc.next().charAt(0);
-					if(Input=='Y'){
-						System.out.println("退出游戏。");
-						break;
-					}else if(Input=='N'){
-						System.out.println("好的，请继续游戏吧。");
-						continue;
-					}else{
-						System.out.print("\r"); // 清除当前行
-						System.out.print(" "); // 覆盖输入
-						System.out.print("\r"); // 返回行首
-						System.out.println("无效输入，请重新输入！");
-					}
-				} else{
-					System.out.println(MessageHandler.handleMessage(userInput));
+				} else {
+					// 使用 MessageHandler 处理用户输入
+					String response = messageHandler.handleMessage(userInput);
+					System.out.println(response);
 				}
 
 				// 读取服务器端的回复
