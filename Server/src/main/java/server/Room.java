@@ -38,10 +38,12 @@ public class Room {
     }
 
 
+    // 新增方法: 设置房间出口
     public void setExit(Direction direction, Room room) {
         exits.put(direction, room);
     }
 
+    // 新增方法: 获取房间出口
     public Optional<Room> getExit(Direction direction) {
         return Optional.ofNullable(exits.get(direction));
     }

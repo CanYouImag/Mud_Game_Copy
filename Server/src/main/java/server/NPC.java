@@ -1,18 +1,16 @@
 package server;
 
-public class Items {
+public class NPC {
     private String id;
     private String name;
     private String description;
     private String roomId;
-    private String playerId;
 
-    public Items(String id, String name, String description, String roomId, String playerId) {
+    public NPC(String id, String name, String description, String roomId) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.roomId = roomId;
-        this.playerId = playerId;
     }
 
     // Getter 和 Setter 方法
@@ -46,18 +44,5 @@ public class Items {
 
     public void setRoomId(String roomId) {
         this.roomId = roomId;
-    }
-
-    public String getPlayerId() {
-        return playerId;
-    }
-
-    public void setPlayerId(String playerId) {
-        this.playerId = playerId;
-    }
-
-    // 新增方法: 判断物品是否被玩家持有
-    public boolean isHeldByPlayer() {
-        return playerId != null && !playerId.isEmpty();
     }
 }

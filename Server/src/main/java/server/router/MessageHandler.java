@@ -44,17 +44,25 @@ public class MessageHandler {
         return currentRoom.getDescription(); // 返回当前房间的详细描述
     }
 
+
     private String handleMoveCommand(String[] parts) {
-        if (parts.length < 2) {
+        // 去除多余空格并重新分割命令
+        String command = String.join(" ", parts).trim();
+        parts = command.split("\\s+");
+
+        if (parts.length==1) {
             return "请指定移动方向。例如：move north 或 move n。"; // 返回提示信息
         }
+
         String direction = parts[1].toLowerCase();
         Room currentRoom = player.getCurrentRoom();
         if (currentRoom == null) {
             return "你似乎不在任何房间中，请尝试重新连接或联系管理员。"; // 返回错误提示
         }
         try {
-            Optional<Room> nextRoomOptional = currentRoom.getExit(Direction.valueOf(direction.toUpperCase()));
+            // 确保方向值与 Direction 枚举一致
+            Direction dir = Direction.valueOf(direction.toUpperCase());
+            Optional<Room> nextRoomOptional = currentRoom.getExit(dir);
             if (nextRoomOptional.isPresent()) {
                 Room nextRoom = nextRoomOptional.get();
                 currentRoom.removePlayer(player);
@@ -65,11 +73,16 @@ public class MessageHandler {
                 return "无法向该方向移动，请检查方向是否正确。"; // 返回错误提示
             }
         } catch (IllegalArgumentException e) {
-            return "无效的方向，请输入 help 查看可用命令。"; // 返回错误提示
+            // 提供更详细的错误信息
+            return "无效的方向，请输入 help 查看可用命令。支持的方向包括：north (n), south (s), east (e), west (w) 等。"; // 返回错误提示
         } catch (Exception e) {
+            // 捕获其他异常并记录日志
+            e.printStackTrace();
             return "移动过程中发生错误，请稍后重试。"; // 返回错误提示
         }
     }
+
+
 
     private String handleGetCommand(String command) {
         if (command == null || command.isEmpty()) {

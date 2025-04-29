@@ -63,8 +63,8 @@ public class World {
             for (Room room : loadedRooms) {
                 rooms.put(room.getId(), room);
                 // 为每个房间生成初始物品
-                room.addItem(new Items("Rusty Sword", "一把生锈的剑。"));
-                room.addItem(new Items("Health Potion", "一瓶可以恢复生命值的药水。"));
+                room.addItem(new Items("10000001", "Rusty Sword", "一把生锈的剑。", room.getId(),null));
+                room.addItem(new Items("10000002", "Health Potion", "一瓶可以恢复生命值的药水。",  room.getId(),null));
             }
         }
     }
