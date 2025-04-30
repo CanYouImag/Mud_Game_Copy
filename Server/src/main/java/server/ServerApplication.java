@@ -207,7 +207,7 @@ public class ServerApplication implements CommandLineRunner {
 
         private boolean validateUser(String username, String password) {
             // 从数据库中获取玩家信息
-            Map<String, String> playerData = DatabaseManager.getPlayer(username);
+            Map<String, Object> playerData = DatabaseManager.getPlayer(username);
     
             // 检查玩家是否存在且密码匹配
             if (playerData != null && playerData.get("password").equals(password)) {

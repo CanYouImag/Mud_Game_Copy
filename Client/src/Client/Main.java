@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
+
+import com.former.database.DatabaseManager;
 import server.router.*;
 import server.*;
 
@@ -96,7 +98,9 @@ public class Main {
 	        // 假设我们有一个方法来获取玩家上次下线时所在的房间ID和地图ID
 	        String lastRoomId = getRoomId(username); // 获取玩家上次下线时所在的房间ID
 	        String lastMapId = getMapId(username);   // 获取玩家上次下线时所在的地图ID
-	        com.former.database.DatabaseManager.savePlayer(username, password, lastRoomId, lastMapId);
+			int lastLevel = getLevel(username);		 //  获取玩家等级
+			int lastExp = getExp(username); 		 // 获取玩家经验值
+	        com.former.database.DatabaseManager.savePlayer(username, password, lastRoomId, lastMapId, lastLevel, lastExp, "凡人");
 	        return true; // 注册成功
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -109,7 +113,7 @@ public class Main {
 	private static boolean loginUser(String username, String password) {
 	    // 调用数据库操作进行用户验证
 	    try {
-	        Map<String, String> playerData = com.former.database.DatabaseManager.getPlayer(username);
+	        Map<String, Object> playerData = DatabaseManager.getPlayer(username);
 	        if (playerData != null && playerData.get("passwd").equals(password)) {
 	            return true; // 登录成功
 	        }
@@ -122,9 +126,9 @@ public class Main {
 	private static String getMapId(String username) {
 	    // 从数据库中获取玩家上次下线时所在的地图ID
 	    try {
-	        Map<String, String> playerData = com.former.database.DatabaseManager.getPlayer(username);
+	        Map<String, Object> playerData = DatabaseManager.getPlayer(username);
 	        if (playerData != null) {
-	            return playerData.get("currentMapId");
+	            return (String) playerData.get("currentMapId");
 	        }
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -135,14 +139,40 @@ public class Main {
 	private static String getRoomId(String username) {
 	    // 从数据库中获取玩家上次下线时所在的房间ID
 	    try {
-	        Map<String, String> playerData = com.former.database.DatabaseManager.getPlayer(username);
+	        Map<String, Object> playerData = DatabaseManager.getPlayer(username);
 	        if (playerData != null) {
-	            return playerData.get("currentRoomId");
+	            return (String) playerData.get("currentRoomId");
 	        }
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
 	    return "001"; // 默认房间ID
+	}
+
+	private static int getLevel(String username){
+		// 从数据库中获取玩家等级
+		try {
+			Map<String, Object> playerData = DatabaseManager.getPlayer(username);
+			if (playerData != null) {
+				return (int) playerData.get("level");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;	// 反正就是你等级出问题了
+	}
+
+	private static int getExp(String username){
+		// 从数据库中获取玩家经验值
+		try {
+			Map<String, Object> playerData = DatabaseManager.getPlayer(username);
+			if (playerData != null) {
+				return (int) playerData.get("exp");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 0;	// 反正就是你经验值出问题了
 	}
 
 	// 打开游戏界面

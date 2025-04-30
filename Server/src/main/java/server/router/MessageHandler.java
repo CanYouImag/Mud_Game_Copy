@@ -31,9 +31,17 @@ public class MessageHandler {
                 return handleGetCommand(Arrays.toString(args));
             case "drop":
                 return handleDropCommand(args);
+            case "levelup": // 新增命令：查看等级和境界
+                return handleLevelUpCommand();
             default:
                 return "无效的命令，请输入 help 查看可用命令。";
         }
+    }
+
+    // 新增方法：处理等级和境界查询
+    private String handleLevelUpCommand() {
+        return String.format("当前等级: %d, 当前境界: %s, 当前经验值: %d/%d",
+                player.getLevel(), player.getRealm(), player.getExp(), player.getExpThreshold());
     }
 
     private String handleLookCommand() {
@@ -50,7 +58,10 @@ public class MessageHandler {
         String command = String.join(" ", parts).trim();
         parts = command.split("\\s+");
 
-        if (parts.length==1) {
+        // 打印调试信息
+        System.out.println("Parsed parts: " + Arrays.toString(parts));
+
+        if (parts == null || parts.length < 2) {
             return "请指定移动方向。例如：move north 或 move n。"; // 返回提示信息
         }
 

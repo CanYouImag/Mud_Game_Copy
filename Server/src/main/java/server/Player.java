@@ -19,14 +19,20 @@ public class Player {
 	private PrintWriter out; // 添加输出流字段
 	private BufferedReader in; // 添加输入流字段
 	private Socket socket;
+	private int level; // 新增字段：玩家等级
+	private int exp; // 新增字段：玩家经验值
+	private String realm; // 新增字段：玩家境界
 
 	// 新增构造函数：仅用于数据库加载场景
-	public Player(String name, String password, String currentRoomId, String currentMapId) {
+	public Player(String name, String password, String currentRoomId, String currentMapId, int level, int exp, String realm) {
 		this.name = name;
 		this.password = password;
 		this.inventory = new ArrayList<>();
 		this.currentRoomId = currentRoomId;
 		this.currentMapId = currentMapId;
+		this.level = level;
+		this.exp = exp;
+		this.realm = realm;
 	}
 
 	// 新增构造函数：接受 name 和 password 参数，并初始化 currentRoomId 和 currentMapId 为默认值
@@ -37,6 +43,9 @@ public class Player {
 		// 从数据库获取初始房间和地图的 ID
 		this.currentRoomId = DatabaseManager.getStartingRoomId();
 		this.currentMapId = DatabaseManager.getStartingMapId();
+		this.level = 1; // 初始等级为1
+		this.exp = 0; // 初始经验值为0
+		this.realm = "凡人"; // 初始境界为凡人
 	}
 
 	public Player(BufferedReader in, PrintWriter out){
@@ -230,5 +239,60 @@ public class Player {
 
 	public void setName(String username) {
 		this.name = username;
+	}
+
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
+
+	public int getExp() {
+		return exp;
+	}
+
+	public void setExp(int exp) {
+		this.exp = exp;
+	}
+
+	public String getRealm() {
+		return realm;
+	}
+
+	public void setRealm(String realm) {
+		this.realm = realm;
+	}
+
+	// 新增方法：增加经验值并检查是否升级
+	public void addExp(int exp) {
+		this.exp += exp;
+		while (this.exp >= getExpThreshold()) {
+			this.exp -= getExpThreshold();
+			this.level++;
+			if (this.level % 10 == 0) {
+				// 达到10的整数倍等级，需要境界突破
+				break;
+			}
+			// 升级后更新境界
+			updateRealm();
+		}
+	}
+
+	// 新增方法：计算当前等级的经验阈值
+	public int getExpThreshold() {
+		return (int) (100 * Math.pow(1.2, this.level - 1));
+	}
+
+	// 新增方法：根据等级更新境界
+	private void updateRealm() {
+		String[] realms = {"凡人", "炼气", "筑基",
+							"结丹", "元婴", "化神",
+							"炼虚", "合体", "大乘",
+							"渡劫", "真仙", "金仙",
+							"太乙", "大罗"};
+		int realmIndex = Math.min(this.level / 10, realms.length - 1);
+		this.realm = realms[realmIndex];
 	}
 }
