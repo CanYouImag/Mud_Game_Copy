@@ -10,289 +10,313 @@ import java.util.List;
 import java.util.Optional;
 
 public class Player {
-	private final ArrayList<Items> inventory;
-	private String name;
-	private String password;
-	private Room currentRoom;
-	private String currentRoomId; // 新增字段：当前房间ID
-	private String currentMapId; // 新增字段：当前地图ID
-	private PrintWriter out; // 添加输出流字段
-	private BufferedReader in; // 添加输入流字段
-	private Socket socket;
-	private int level; // 新增字段：玩家等级
-	private int exp; // 新增字段：玩家经验值
-	private String realm; // 新增字段：玩家境界
+    private final ArrayList<Items> inventory;
+    private String name;
+    private String password;
+    private Room currentRoom;
+    private String currentRoomId; // 新增字段：当前房间ID
+    private String currentMapId; // 新增字段：当前地图ID
+    private PrintWriter out; // 添加输出流字段
+    private BufferedReader in; // 添加输入流字段
+    private Socket socket;
+    private int level; // 新增字段：玩家等级
+    private int exp; // 新增字段：玩家经验值
+    private String realm; // 新增字段：玩家境界
 
-	// 新增构造函数：仅用于数据库加载场景
-	public Player(String name, String password, String currentRoomId, String currentMapId, int level, int exp, String realm) {
-		this.name = name;
-		this.password = password;
-		this.inventory = new ArrayList<>();
-		this.currentRoomId = currentRoomId;
-		this.currentMapId = currentMapId;
-		this.level = level;
-		this.exp = exp;
-		this.realm = realm;
-	}
+    // 新增字段：已学习的技能列表
+    private List<Long> learnedSkills;
 
-	// 新增构造函数：接受 name 和 password 参数，并初始化 currentRoomId 和 currentMapId 为默认值
-	public Player(String name, String password) {
-		this.name = name;
-		this.password = password;
-		this.inventory = new ArrayList<>();
-		// 从数据库获取初始房间和地图的 ID
-		this.currentRoomId = DatabaseManager.getStartingRoomId();
-		this.currentMapId = DatabaseManager.getStartingMapId();
-		this.level = 1; // 初始等级为1
-		this.exp = 0; // 初始经验值为0
-		this.realm = "凡人"; // 初始境界为凡人
-	}
+    // 新增构造函数：初始化已学习的技能列表
+    public Player(String name, String password, String currentRoomId, String currentMapId, int level, int exp, String realm) {
+        this.name = name;
+        this.password = password;
+        this.inventory = new ArrayList<>();
+        this.currentRoomId = currentRoomId;
+        this.currentMapId = currentMapId;
+        this.level = level;
+        this.exp = exp;
+        this.realm = realm;
+        this.learnedSkills = new ArrayList<>(); // 初始化已学习的技能列表
+    }
 
-	public Player(BufferedReader in, PrintWriter out){
-		this.in = in;
-		this.out = out;
-		this.inventory= new ArrayList<>();
-	}
+    // 新增构造函数：接受 name 和 password 参数，并初始化 currentRoomId 和 currentMapId 为默认值
+    public Player(String name, String password) {
+        this.name = name;
+        this.password = password;
+        this.inventory = new ArrayList<>();
+        // 从数据库获取初始房间和地图的 ID
+        this.currentRoomId = DatabaseManager.getStartingRoomId();
+        this.currentMapId = DatabaseManager.getStartingMapId();
+        this.level = 1; // 初始等级为1
+        this.exp = 0; // 初始经验值为0
+        this.realm = "凡人"; // 初始境界为凡人
+    }
 
-	public void run() {
-		try {
-			out.println("欢迎来到Mud修仙世界，请修士告诉我你的名字：");
-			name = in.readLine();
-			out.println("好的，" + name + "！你现在位于初始大厅。");
-			currentRoom.addPlayer(this);
+    public Player(BufferedReader in, PrintWriter out){
+        this.in = in;
+        this.out = out;
+        this.inventory= new ArrayList<>();
+    }
 
-			// 登录成功后自动执行 look 命令
-			String response = processCommand("look");
-			if (response != null && !response.isEmpty()) {
-				out.println(response);
-			}
+    public void run() {
+        try {
+            out.println("欢迎来到Mud修仙世界，请修士告诉我你的名字：");
+            name = in.readLine();
+            out.println("好的，" + name + "！你现在位于初始大厅。");
+            currentRoom.addPlayer(this);
 
-			MessageHandler messageHandler = new MessageHandler(this);
-			String input;
-			while ((input = in.readLine()) != null) {
-				String response1 = processCommand(input);
-				if (response1 != null && !response1.isEmpty()) {
-					out.println(response1);
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if(out != null){
-					out.close();
-				}
-				if(in != null){
-					in.close();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+            // 登录成功后自动执行 look 命令
+            String response = processCommand("look");
+            if (response != null && !response.isEmpty()) {
+                out.println(response);
+            }
 
-	public String processCommand(String command) {
-		String[] parts = command.split(" ");
-		String commandName = parts[0].toLowerCase();
-		String[] args = Arrays.copyOfRange(parts, 1, parts.length);
+            MessageHandler messageHandler = new MessageHandler(this);
+            String input;
+            while ((input = in.readLine()) != null) {
+                String response1 = processCommand(input);
+                if (response1 != null && !response1.isEmpty()) {
+                    out.println(response1);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(out != null){
+                    out.close();
+                }
+                if(in != null){
+                    in.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-		switch (commandName) {
-			case "look":
-			case "l":
-				return currentRoom.getDescription();
-			case "quit":
-				return "非常感谢您的游玩，" + name + "再见！";
-			case "north":
-			case "n":
-				move(Direction.NORTH);
-				return "你去往北。";
-			case "south":
-			case "s":
-				move(Direction.SOUTH);
-				return "你去往南。";
-			case "east":
-			case "e":
-				move(Direction.EAST);
-				return "你去往东。";
-			case "west":
-			case "w":
-				move(Direction.WEST);
-				return "你去往西。";
-			case "get":
-				if (args.length == 0) {
-					return "请输入 'get [物品]' 来获取物品。";
-				} else {
-					String itemName = args[0];
-					for (Items item : currentRoom.getItems()) {
-						if (item.getName().equalsIgnoreCase(itemName)) {
-							currentRoom.removeItem(item);
-							inventory.add(item);
-							return "你获取了物品：" + item.getName();
-						}
-					}
-					return "物品 " + itemName + " 不存在于此房间。";
-				}
-			case "drop":
-				if (args.length == 0) {
-					return "请输入 'drop [物品]' 来丢弃物品。";
-				} else {
-					String itemName = args[0];
-					for (Items item : inventory) {
-						if (item.getName().equalsIgnoreCase(itemName)) {
-							inventory.remove(item);
-							currentRoom.addItem(item);
-							return "你丢弃了物品：" + item.getName();
-						}
-					}
-					return "你没有持有物品 " + itemName + "。";
-				}
-			case "say":
-				if (args.length == 0) {
-					return "请输入 'say [消息]' 来发送消息。";
-				} else {
-					String message = String.join(" ", args);
-					currentRoom.broadcast(name + " says: " + message);
-					return "你发送了消息：" + message;
-				}
-			default:
-				return "未知命令：" + command;
-		}
-	}
+    public String processCommand(String command) {
+        String[] parts = command.split(" ");
+        String commandName = parts[0].toLowerCase();
+        String[] args = Arrays.copyOfRange(parts, 1, parts.length);
 
-	private void move(Direction direction) {
-		Optional<Room> nextRoomOptional = currentRoom.getExit(direction);
-		if (nextRoomOptional.isPresent()) {
-			Room nextRoom = nextRoomOptional.get();
-			currentRoom.removePlayer(this);
-			currentRoom = nextRoom;
-			currentRoom.addPlayer(this);
-			out.println("你去往" + direction + "。");
-			out.println(currentRoom.getDescription());
-			currentRoom.broadcast(name + " moves " + direction + ".");
-		} else {
-			out.println("那地方你过不去！");
-		}
-	}
+        switch (commandName) {
+            case "look":
+            case "l":
+                return currentRoom.getDescription();
+            case "quit":
+                return "非常感谢您的游玩，" + name + "再见！";
+            case "north":
+            case "n":
+                move(Direction.NORTH);
+                return "你去往北。";
+            case "south":
+            case "s":
+                move(Direction.SOUTH);
+                return "你去往南。";
+            case "east":
+            case "e":
+                move(Direction.EAST);
+                return "你去往东。";
+            case "west":
+            case "w":
+                move(Direction.WEST);
+                return "你去往西。";
+            case "get":
+                if (args.length == 0) {
+                    return "请输入 'get [物品]' 来获取物品。";
+                } else {
+                    String itemName = args[0];
+                    for (Items item : currentRoom.getItems()) {
+                        if (item.getName().equalsIgnoreCase(itemName)) {
+                            currentRoom.removeItem(item);
+                            inventory.add(item);
+                            return "你获取了物品：" + item.getName();
+                        }
+                    }
+                    return "物品 " + itemName + " 不存在于此房间。";
+                }
+            case "drop":
+                if (args.length == 0) {
+                    return "请输入 'drop [物品]' 来丢弃物品。";
+                } else {
+                    String itemName = args[0];
+                    for (Items item : inventory) {
+                        if (item.getName().equalsIgnoreCase(itemName)) {
+                            inventory.remove(item);
+                            currentRoom.addItem(item);
+                            return "你丢弃了物品：" + item.getName();
+                        }
+                    }
+                    return "你没有持有物品 " + itemName + "。";
+                }
+            case "say":
+                if (args.length == 0) {
+                    return "请输入 'say [消息]' 来发送消息。";
+                } else {
+                    String message = String.join(" ", args);
+                    currentRoom.broadcast(name + " says: " + message);
+                    return "你发送了消息：" + message;
+                }
+            default:
+                return "未知命令：" + command;
+        }
+    }
 
-	public void sendMessage(String message) {
-		if (out != null) {
-			out.println(message);
-		}
-	}
+    private void move(Direction direction) {
+        Optional<Room> nextRoomOptional = currentRoom.getExit(direction);
+        if (nextRoomOptional.isPresent()) {
+            Room nextRoom = nextRoomOptional.get();
+            currentRoom.removePlayer(this);
+            currentRoom = nextRoom;
+            currentRoom.addPlayer(this);
+            out.println("你去往" + direction + "。");
+            out.println(currentRoom.getDescription());
+            currentRoom.broadcast(name + " moves " + direction + ".");
+        } else {
+            out.println("那地方你过不去！");
+        }
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void sendMessage(String message) {
+        if (out != null) {
+            out.println(message);
+        }
+    }
 
-	public List<Items> getInventory() {
-		return inventory;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public Room getCurrentRoom() {
-		return currentRoom;
-	}
+    public List<Items> getInventory() {
+        return inventory;
+    }
 
-	public void setCurrentRoom(Room room) {
-		this.currentRoom = room;
-	}
+    public Room getCurrentRoom() {
+        return currentRoom;
+    }
 
-	public void addItem(Items item) {
-		inventory.add(item);
-	}
+    public void setCurrentRoom(Room room) {
+        this.currentRoom = room;
+    }
 
-	public void removeItem(Items item) {
-		inventory.remove(item);
-	}
+    public void addItem(Items item) {
+        inventory.add(item);
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public void removeItem(Items item) {
+        inventory.remove(item);
+    }
 
-	public void setSocket(Socket clientSocket) {
-		this.socket = clientSocket;
-	}
-	public Socket getSocket() {
-		return socket;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	// 新增 getter 和 setter 方法
-	public String getCurrentRoomId() {
-		return currentRoomId;
-	}
+    public void setSocket(Socket clientSocket) {
+        this.socket = clientSocket;
+    }
+    public Socket getSocket() {
+        return socket;
+    }
 
-	public void setCurrentRoomId(String currentRoomId) {
-		this.currentRoomId = currentRoomId;
-	}
+    // 新增 getter 和 setter 方法
+    public String getCurrentRoomId() {
+        return currentRoomId;
+    }
 
-	public String getCurrentMapId() {
-		return currentMapId;
-	}
+    public void setCurrentRoomId(String currentRoomId) {
+        this.currentRoomId = currentRoomId;
+    }
 
-	public void setCurrentMapId(String currentMapId) {
-		this.currentMapId = currentMapId;
-	}
+    public String getCurrentMapId() {
+        return currentMapId;
+    }
 
-	// 新增 setOut 方法
-	public void setOut(PrintWriter out) {
-		this.out = out;
-	}
+    public void setCurrentMapId(String currentMapId) {
+        this.currentMapId = currentMapId;
+    }
 
-	public void setName(String username) {
-		this.name = username;
-	}
+    // 新增 setOut 方法
+    public void setOut(PrintWriter out) {
+        this.out = out;
+    }
 
-	public int getLevel() {
-		return level;
-	}
+    public void setName(String username) {
+        this.name = username;
+    }
 
-	public void setLevel(int level) {
-		this.level = level;
-	}
+    public int getLevel() {
+        return level;
+    }
 
-	public int getExp() {
-		return exp;
-	}
+    public void setLevel(int level) {
+        this.level = level;
+    }
 
-	public void setExp(int exp) {
-		this.exp = exp;
-	}
+    public int getExp() {
+        return exp;
+    }
 
-	public String getRealm() {
-		return realm;
-	}
+    public void setExp(int exp) {
+        this.exp = exp;
+    }
 
-	public void setRealm(String realm) {
-		this.realm = realm;
-	}
+    public String getRealm() {
+        return realm;
+    }
 
-	// 新增方法：增加经验值并检查是否升级
-	public void addExp(int exp) {
-		this.exp += exp;
-		while (this.exp >= getExpThreshold()) {
-			this.exp -= getExpThreshold();
-			this.level++;
-			if (this.level % 10 == 0) {
-				// 达到10的整数倍等级，需要境界突破
-				break;
-			}
-			// 升级后更新境界
-			updateRealm();
-		}
-	}
+    public void setRealm(String realm) {
+        this.realm = realm;
+    }
 
-	// 新增方法：计算当前等级的经验阈值
-	public int getExpThreshold() {
-		return (int) (100 * Math.pow(1.2, this.level - 1));
-	}
+    // 新增方法：向其他玩家发送消息
+    public void sendMessageToOthers(String message) {
+        if (currentRoom != null) {
+            currentRoom.broadcastMessageToOthers(this, message);
+        }
+    }
 
-	// 新增方法：根据等级更新境界
-	private void updateRealm() {
-		String[] realms = {"凡人", "炼气", "筑基",
-							"结丹", "元婴", "化神",
-							"炼虚", "合体", "大乘",
-							"渡劫", "真仙", "金仙",
-							"太乙", "大罗"};
-		int realmIndex = Math.min(this.level / 10, realms.length - 1);
-		this.realm = realms[realmIndex];
-	}
+    // 新增方法：增加经验值并检查是否升级
+    public void addExp(int exp) {
+        this.exp += exp;
+        while (this.exp >= getExpThreshold()) {
+            this.exp -= getExpThreshold();
+            this.level++;
+            if (this.level % 10 == 0) {
+                // 达到10的整数倍等级，需要境界突破
+                break;
+            }
+            // 升级后更新境界
+            updateRealm();
+        }
+    }
+
+    // 新增方法：计算当前等级的经验阈值
+    public int getExpThreshold() {
+        return (int) (100 * Math.pow(1.2, this.level - 1));
+    }
+
+    // 新增方法：根据等级更新境界
+    private void updateRealm() {
+        String[] realms = {"凡人", "炼气", "筑基",
+                            "结丹", "元婴", "化神",
+                            "炼虚", "合体", "大乘",
+                            "渡劫", "真仙", "金仙",
+                            "太乙", "大罗"};
+        int realmIndex = Math.min(this.level / 10, realms.length - 1);
+        this.realm = realms[realmIndex];
+    }
+
+    // 新增方法：学习新技能
+    public void learnSkill(long skillId) {
+        if (!learnedSkills.contains(skillId)) {
+            learnedSkills.add(skillId);
+            DatabaseManager.saveLearnedSkill(Long.parseLong(DatabaseManager.getPlayerIdByName(name)), skillId);
+        }
+    }
+
+    // 新增方法：获取已学习的技能列表
+    public List<Long> getLearnedSkills() {
+        return learnedSkills;
+    }
 }

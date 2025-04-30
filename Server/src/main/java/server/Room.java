@@ -104,6 +104,15 @@ public class Room {
         }
     }
 
+    // 新增方法：向除当前玩家外的所有其他玩家广播消息
+    public void broadcastMessageToOthers(Player sender, String message) {
+        for (Player player : players) {
+            if (player != sender) {
+                player.sendMessage(message);
+            }
+        }
+    }
+
     public HashMap<Direction, Room> getExits() {
         return exits;
     }

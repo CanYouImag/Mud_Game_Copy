@@ -88,4 +88,11 @@ public class World {
     public void removeRoom(String roomId) {
         rooms.remove(roomId);
     }
+
+    // 新增方法：向所有玩家广播消息
+    public void broadcastMessage(String message) {
+        for (Player player : players.values()) {
+            player.sendMessage(message);
+        }
+    }
 }

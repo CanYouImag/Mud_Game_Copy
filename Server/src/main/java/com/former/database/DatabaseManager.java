@@ -143,7 +143,7 @@ public class DatabaseManager {
 				pstmt.setString(5, currentMapId); // 插入当前地图ID
 				pstmt.setInt(6, level); // 插入等级
 				pstmt.setInt(7, exp); // 插入经验值
-				pstmt.setString(8, realm); // 插入境界
+				pstmt.setString(8, realm); // 揿境界
 				pstmt.executeUpdate();
 			}
 		} catch (SQLException e) {
@@ -204,6 +204,21 @@ public class DatabaseManager {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public static String getPlayerIdByName(String name) {
+		try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+			PreparedStatement statement = connection.prepareStatement("SELECT player_id FROM players WHERE name = ?")) {
+			statement.setString(1, name);
+			try (ResultSet resultSet = statement.executeQuery()) {
+				if (resultSet.next()) {
+					return resultSet.getString("player_id");
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return "0";
 	}
 
 	public boolean registerUser(String username, String id, String password) {
@@ -494,9 +509,9 @@ public class DatabaseManager {
 		return skillList;
 	}
 
-	// 新增方法: 保存已学习技能信息到数据库
+	// 新增方法: 保存已学习技能信息到数据库 (针对 learned_skill 表)
 	public static void saveLearnedSkill(long playerId, long skillId) {
-		String sql = "INSERT INTO player_learned_skills (player_id, learned_skills_id) VALUES (?, ?)";
+		String sql = "INSERT INTO player_learned_skills (player_id, player_learned_skills.learned_skills_id) VALUES (?, ?)";
 		try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
 			PreparedStatement pstmt = conn != null ? conn.prepareStatement(sql) : null) {
 			if (pstmt != null) {
@@ -509,9 +524,9 @@ public class DatabaseManager {
 		}
 	}
 
-	// 新增方法: 获取玩家已学习的技能
+	// 新增方法: 获取玩家已学习的技能 (针对 learned_skill 表)
 	public static List<Map<String, Object>> getLearnedSkills(String playerId) {
-		String sql = "SELECT ls.* FROM player_learned_skills pls JOIN learned_skills ls ON pls.learned_skills_id = ls.id WHERE pls.player_id = ?";
+		String sql = "SELECT pls.* FROM player_learned_skills pls WHERE pls.player_id = ?";
 		List<Map<String, Object>> learnedSkills = new ArrayList<>();
 		try (Connection conn = getConnection(DB_URL, DB_USER, DB_PASSWORD);
 			PreparedStatement pstmt = conn != null ? conn.prepareStatement(sql) : null) {

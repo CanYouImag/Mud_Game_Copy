@@ -31,8 +31,10 @@ public class MessageHandler {
                 return handleGetCommand(Arrays.toString(args));
             case "drop":
                 return handleDropCommand(args);
-            case "levelup": // 新增命令：查看等级和境界
+            case "levelup":
                 return handleLevelUpCommand();
+            case "learn": // 新增命令：学习技能
+                return handleLearnCommand(args);
             default:
                 return "无效的命令，请输入 help 查看可用命令。";
         }
@@ -93,7 +95,18 @@ public class MessageHandler {
         }
     }
 
-
+    private String handleLearnCommand(String[] args) {
+        if (args.length < 1) {
+            return "请输入 'learn [技能ID]' 来学习新技能。";
+        }
+        try {
+            long skillId = Long.parseLong(args[0]);
+            player.learnSkill(skillId);
+            return "你成功学习了技能 ID: " + skillId;
+        } catch (NumberFormatException e) {
+            return "无效的技能ID，请输入数字。";
+        }
+    }
 
     private String handleGetCommand(String command) {
         if (command == null || command.isEmpty()) {

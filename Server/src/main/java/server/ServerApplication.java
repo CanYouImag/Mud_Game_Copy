@@ -17,7 +17,7 @@ import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Map;
+import java.util.Objects;
 
 @SpringBootApplication
 public class ServerApplication implements CommandLineRunner {
@@ -93,10 +93,12 @@ public class ServerApplication implements CommandLineRunner {
                 player.setOut(out); // 设置玩家的输出流
 
                 // 初始化 World 对象并获取起始房间
-                World world = new World();
                 Room startingRoom = world.getRooms().values().iterator().next();
                 player.setCurrentRoom(startingRoom);
                 startingRoom.addPlayer(player);
+
+                // 向所有玩家广播新玩家加入的消息
+                world.broadcastMessage(player.getName() + " 加入了游戏。");
 
                 // 确保 MessageHandler 实例化时传入有效的 Player 对象
                 MessageHandler messageHandler = new MessageHandler(player);
@@ -206,16 +208,7 @@ public class ServerApplication implements CommandLineRunner {
         }
 
         private boolean validateUser(String username, String password) {
-            // 从数据库中获取玩家信息
-            Map<String, Object> playerData = DatabaseManager.getPlayer(username);
-    
-            // 检查玩家是否存在且密码匹配
-            if (playerData != null && playerData.get("password").equals(password)) {
-                player.setName(username); // 更新玩家名称
-                return true;
-            }
-    
-            return false;
+            return DatabaseManager.isUsernameExists(username) && Objects.requireNonNull(DatabaseManager.getPlayer(username)).get("password").equals(password);
         }
 
         private String processRequest(String request) {
